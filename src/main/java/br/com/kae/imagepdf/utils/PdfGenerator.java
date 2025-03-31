@@ -13,10 +13,16 @@ public class PdfGenerator {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         Document document = new Document();
         PdfWriter.getInstance(document, outputStream);
-        document.open();
 
+
+        byte[] imageBytes = file.getBytes();
+        if (imageBytes.length == 0) {
+            throw new RuntimeException("Erro: O arquivo de imagem está vazio.");
+        }
         Image image = Image.getInstance(file.getBytes());
-        image.scaleToFit(PageSize.A4.getWidth() - 50, PageSize.A4.getHeight() - 50);
+        document.setPageSize(new com.itextpdf.text.Rectangle(image.getWidth(), image.getHeight()));
+        image.setAbsolutePosition(0, 0);
+        document.open();
         document.add(image);
         document.close();
 

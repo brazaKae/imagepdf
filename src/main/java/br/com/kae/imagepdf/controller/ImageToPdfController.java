@@ -10,11 +10,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
-@RequiredArgsConstructor
 //@CrossOrigin(origins = "*") // quando o front estiver em outro servidor
 public class ImageToPdfController {
 
     private final ImageToPdfService imageToPdfService;
+
+    public ImageToPdfController(ImageToPdfService imageToPdfService) {
+        this.imageToPdfService = imageToPdfService;
+    }
+
 
     @PostMapping("/converter")
     public ResponseEntity<byte[]> convertImageToPdf(@RequestParam("file") MultipartFile file) {
@@ -22,12 +26,17 @@ public class ImageToPdfController {
             byte[] pdfBytes = imageToPdfService.convertImageToPdf(file);
 
             // pegar o nome do arquivo
-            String originalFileName = file.getOriginalFilename();
-            String pdfFileName = (originalFileName.isEmpty() ? originalFileName.replaceAll("\\.[^.]+$", "") : "converted") + ".pdf";
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename.isEmpty()) {
+                originalFilename = "converted";
+            } else {
+                originalFilename = originalFilename.replaceAll("\\.[^.]+$", ""); // Remove a extensão original
+            }
+            String pdfFilename = originalFilename + ".pdf";
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", pdfFileName);
+            headers.setContentDispositionFormData("attachment", pdfFilename);
 
             return ResponseEntity.ok()
                     .headers(headers)

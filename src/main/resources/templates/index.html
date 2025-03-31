@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Imagem para PDF</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Converter Imagem para PDF</h2>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" accept="image/*" required>
+        <button type="button" onclick="uploadFile()">Converter</button>
+    </form>
+    <a id="downloadLink" style="display:none">Baixar PDF</a>
+</div>
+
+<script>
+    function uploadFile() {
+        let fileInput = document.getElementById("fileInput").files[0];
+        if (!fileInput) return;
+
+        let formData = new FormData();
+        formData.append("file", fileInput);
+
+        fetch("/api/convert", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            let url = URL.createObjectURL(blob);
+            let downloadLink = document.getElementById("downloadLink");
+            downloadLink.href = url;
+            downloadLink.download = "converted.pdf";
+            downloadLink.style.display = "block";
+            downloadLink.innerText = "Baixar PDF";
+        });
+    }
+</script>
+</body>
+</html>
