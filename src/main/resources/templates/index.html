@@ -24,7 +24,7 @@
         let formData = new FormData();
         formData.append("file", fileInput);
 
-        fetch("/api/convert", {
+        fetch("/api/converter", {
             method: "POST",
             body: formData
         })

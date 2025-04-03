@@ -21,40 +21,31 @@ public class ImageToPdfController {
 
 
     @PostMapping("/converter")
-    public ResponseEntity<byte[]> convertImageToPdf(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> convertImageToPdf(@RequestParam("file") MultipartFile file) {
         try {
+            // Validação simples
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Por favor, envie um arquivo de imagem");
+            }
+
             byte[] pdfBytes = imageToPdfService.convertImageToPdf(file);
 
-            // pegar o nome do arquivo
-            String originalFilename = file.getOriginalFilename();
-            if (originalFilename.isEmpty()) {
-                originalFilename = "converted";
-            } else {
-                originalFilename = originalFilename.replaceAll("\\.[^.]+$", ""); // Remove a extensão original
-            }
-            String pdfFilename = originalFilename + ".pdf";
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDispositionFormData("attachment", pdfFilename);
+            String pdfFilename = file.getOriginalFilename() == null ?
+                    "converted.pdf" :
+                    file.getOriginalFilename().replaceAll("\\.[^.]+$", "") + ".pdf";
 
             return ResponseEntity.ok()
-                    .headers(headers)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + pdfFilename + "\"")
+                    .contentType(MediaType.APPLICATION_PDF)
                     .body(pdfBytes);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.internalServerError()
+                    .body("Erro ao converter imagem para PDF: " + e.getMessage());
         }
     }
-
-}
-
-
-
-
-
-
-
-
+    }
 
 
 
